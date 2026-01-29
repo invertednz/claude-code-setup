@@ -1,8 +1,12 @@
 # Start Task - Full Automated Workflow
 
-Create a branch, implement the task, then **automatically** run tests, security, docs, and create PR.
+**Runs from spec**: Reads next story from `docs/specs/prd.json` and completes it automatically.
 
-This is a **complete workflow** - no need to run `/finish-task` or `/complete-task` separately.
+This is a **complete workflow** - branch, implement, test, security, docs, PR, merge.
+
+## Prerequisite
+
+Run `/create-spec` first to create the specification with user stories.
 
 ## Pre-computed Context
 
@@ -10,53 +14,69 @@ This is a **complete workflow** - no need to run `/finish-task` or `/complete-ta
 git branch --show-current
 git status --short
 git log --oneline -3
+cat docs/specs/prd.json 2>/dev/null || echo "No prd.json - run /create-spec first"
 cat docs/INDEX.md 2>/dev/null | head -30 || echo "No docs yet"
 cat docs/AGENTS.md 2>/dev/null | head -20 || echo "No AGENTS.md"
-cat docs/specs/prd.json 2>/dev/null | head -30 || echo "No prd.json"
 cat package.json 2>/dev/null | grep -A 15 '"scripts"' || echo "No package.json"
 ```
+
+## Spec Requirement
+
+This command reads from `docs/specs/prd.json`:
+```json
+{
+  "name": "Feature Name",
+  "stories": [
+    {
+      "id": "US-1",
+      "title": "Story title",
+      "acceptance_criteria": ["..."],
+      "priority": 1,
+      "passes": false
+    }
+  ]
+}
+```
+
+If no prd.json exists, prompt user to run `/create-spec` first.
 
 ## Instructions
 
 ### Phase 1: SETUP
 
-#### 1a. Ensure Clean State
+#### 1a. Read Spec
+Load `docs/specs/prd.json` and select the highest priority story where `passes: false`.
+
+If all stories are complete, report "All stories complete!" and exit.
+
+#### 1b. Ensure Clean State
 Check for uncommitted changes:
 - If changes exist, ask: "Uncommitted changes found. Stash, commit, or abort?"
-- Handle accordingly
 
-#### 1b. Update Main
+#### 1c. Update Main
 ```bash
 git checkout main
 git pull origin main
 ```
 
-#### 1c. Create Feature Branch
+#### 1d. Create Feature Branch
 ```bash
-git checkout -b feature/{task-description}
+git checkout -b feature/{story-id}-{short-description}
 ```
 
-#### 1d. Initialize Docs (if missing)
-If `docs/INDEX.md` doesn't exist, create documentation structure:
-- docs/INDEX.md
-- docs/AGENTS.md
-- docs/ARCHITECTURE.md
-- docs/USAGE.md
-- docs/progress.txt
+#### 1e. Initialize Docs (if missing)
+If `docs/INDEX.md` doesn't exist, create documentation structure.
 
 ### Phase 2: PLAN
 
-#### 2a. Enter Plan Mode
-Discuss the task with the user. Ask clarifying questions:
-- What exactly needs to be built?
-- What are the acceptance criteria?
-- Are there specific requirements?
+#### 2a. Display Story
+Show the user:
+- Story ID and title
+- Description
+- Acceptance criteria
 
-#### 2b. Create Implementation Plan
-Once requirements are clear, outline:
-- Files to create/modify
-- Key functions/components
-- Test approach
+#### 2b. Confirm or Clarify
+Ask: "Ready to implement this story? Any questions before I start?"
 
 Get user approval before proceeding.
 
@@ -143,7 +163,7 @@ Add gotchas:
 #### 6c. Append to progress.txt
 ```markdown
 ---
-## {YYYY-MM-DD} - {Task Name}
+## {YYYY-MM-DD} - {story-id}: {title}
 ### Completed
 - {What was built}
 ### Files Changed
@@ -161,6 +181,12 @@ Add gotchas:
 ```markdown
 ## {Feature}
 **Usage**: `{example}`
+```
+
+#### 6e. Update prd.json
+Mark the story as complete:
+```json
+{ "id": "{story-id}", "passes": true }
 ```
 
 ### Phase 7: COMMIT & PR (Automatic)

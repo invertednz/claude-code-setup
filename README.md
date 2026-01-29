@@ -144,43 +144,38 @@ Dangerous commands are blocked:
 
 ## Daily Usage Guide
 
-### Recommended: Spec-Driven (2 Commands)
+Always start with `/create-spec`, then choose your execution style:
+
+### Option A: TDD Loop (Recommended)
 
 ```bash
-# Step 1: Create spec (Claude asks questions until satisfied)
-/create-spec
-
-# Step 2: Run TDD loop (does EVERYTHING automatically)
-/tdd-loop
+/create-spec     # Claude asks questions, creates prd.json with stories
+/tdd-loop        # Completes ALL stories automatically
 ```
 
-**That's it.** The TDD loop handles:
-- ✅ Branch creation per story
+### Option B: One Story at a Time
+
+```bash
+/create-spec     # Claude asks questions, creates prd.json with stories
+/start-task      # Completes ONE story (run again for next story)
+```
+
+### Option C: Fully Autonomous
+
+```bash
+/create-spec     # Claude asks questions, creates prd.json with stories
+/ralph-loop      # Runs unattended until ALL stories done
+```
+
+**All options automatically handle** (per story):
+- ✅ Branch creation
 - ✅ Test creation (unit, integration, Playwright e2e)
 - ✅ Implementation
 - ✅ Verification (lint, typecheck, tests, build)
 - ✅ Security scanning
-- ✅ Documentation updates
+- ✅ Documentation updates (INDEX.md, AGENTS.md, progress.txt)
 - ✅ Commit & PR
 - ✅ Merge to main
-- ✅ Loop to next story
-
-### Alternative: Single Task
-
-```bash
-/start-task
-```
-
-Full automated workflow for one task - same automation as above.
-
-### Alternative: Fully Autonomous
-
-```bash
-/create-spec
-/ralph-loop --max-iterations 50
-```
-
-Runs completely unattended until all stories are done.
 
 ### Manual Commands (Rarely Needed)
 
