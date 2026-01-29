@@ -1,6 +1,8 @@
 # Finish Task
 
-Complete the current task: verify, test, **update docs**, commit, create PR, and merge.
+Complete the current task: verify, test, **auto-update docs**, commit, create PR, and merge.
+
+Documentation updates are AUTOMATIC - no manual `/update-docs` needed.
 
 ## Pre-computed Context
 
@@ -8,9 +10,11 @@ Complete the current task: verify, test, **update docs**, commit, create PR, and
 git branch --show-current
 git status
 git diff --stat
+git diff --name-only
 git log main..HEAD --oneline
-cat docs/INDEX.md 2>/dev/null | head -20 || echo "No docs - run /init-docs"
-```
+cat docs/INDEX.md 2>/dev/null | head -30 || echo "No docs - run /init-docs first"
+cat docs/AGENTS.md 2>/dev/null | head -20 || echo "No AGENTS.md"
+
 
 ## Instructions
 
@@ -48,40 +52,96 @@ If ANY verification fails:
 3. Fix if requested, then re-verify
 4. Do NOT proceed until all pass
 
-### Step 3: Update Documentation
+### Step 3: Auto-Update Documentation (REQUIRED)
 
-Update docs to reflect changes (source of truth for future context):
+Documentation updates happen automatically. Do ALL of the following:
 
-1. **INDEX.md** - Add new files to registry:
-   ```markdown
-   | `{new file}` | {purpose} | `{exports}` |
-   ```
+#### 3a. Initialize docs if missing
 
-2. **AGENTS.md** - Add patterns/gotchas discovered:
-   ```markdown
-   ### Pattern: {Name}
-   **When**: {trigger}
-   **Do**: {action}
-   ```
+If `docs/INDEX.md` doesn't exist:
+```bash
+mkdir -p docs
+```
+Then create INDEX.md, AGENTS.md, progress.txt with basic structure.
 
-3. **progress.txt** - Append learnings:
-   ```markdown
-   ---
-   ## {Date} - {Task Name}
-   ### Completed
-   - {What was built}
-   ### Learnings
-   - {Insights gained}
-   ---
-   ```
+#### 3b. Update INDEX.md (ALWAYS)
 
-4. **USAGE.md** - Add user-facing features:
-   ```markdown
-   ## {Feature}
-   **Usage**: `{example}`
-   ```
+For EACH new/modified file, add or update the registry:
 
-Stage docs: `git add docs/`
+```markdown
+### {Section - Components/Services/Utils/etc.}
+| File | Purpose | Exports |
+|------|---------|---------|
+| `{path/to/file.ts}` | {one-line purpose} | `{key exports}` |
+```
+
+Also update:
+- Module dependencies diagram if structure changed
+- Quick Reference table if new areas added
+
+#### 3c. Update AGENTS.md (if patterns/gotchas found)
+
+Add any discovered patterns:
+```markdown
+### Pattern: {Name}
+**When**: {specific trigger condition}
+**Do**: {specific action}
+**Example**: `{file path or code snippet}`
+```
+
+Add any gotchas discovered:
+```markdown
+| {Situation} | {What to watch out for} | {Solution} |
+```
+
+#### 3d. Append to progress.txt (ALWAYS)
+
+APPEND (never edit previous entries):
+```markdown
+---
+
+## {YYYY-MM-DD} - {Task/Feature Name}
+
+### Completed
+- {Specific thing built/changed}
+- {Another thing}
+
+### Files Changed
+- `{path}`: {brief description of change}
+
+### Patterns Used
+- {Pattern name}: {why it was used}
+
+### Gotchas Found
+- {Issue}: {solution that worked}
+
+### Learnings
+- {Insight for future reference}
+
+---
+```
+
+#### 3e. Update USAGE.md (if user-facing features)
+
+For new features users will interact with:
+```markdown
+## {Feature Name}
+
+{One sentence description}
+
+**Quick Start**:
+```typescript
+// Minimal working example
+```
+
+**Options**:
+| Option | Type | Default | Description |
+```
+
+#### 3f. Stage documentation
+```bash
+git add docs/
+```
 
 ### Step 4: Stage and Commit
 

@@ -80,23 +80,59 @@ If ANY step fails:
 2. Re-run verification
 3. Do NOT proceed until all pass
 
-### Phase 5: UPDATE - Mark Story Complete
+### Phase 5: AUTO-UPDATE DOCUMENTATION
 
-1. Update `docs/specs/prd.json`:
-   ```json
-   {
-     "id": "{story-id}",
-     "passes": true
-   }
-   ```
+Documentation is updated automatically after each story:
 
-2. Update `progress.txt` with learnings:
-   ```
-   ## {story-id} - {date}
-   - Implemented: {what was built}
-   - Challenges: {any issues encountered}
-   - Learnings: {what was learned}
-   ```
+#### 5a. Update prd.json
+```json
+{
+  "id": "{story-id}",
+  "passes": true
+}
+```
+
+#### 5b. Update INDEX.md
+Add all new files to the registry:
+```markdown
+| `{path/file.ts}` | {purpose} | `{exports}` |
+```
+Update dependency graph if needed.
+
+#### 5c. Update AGENTS.md
+Add patterns discovered:
+```markdown
+### Pattern: {Name}
+**When**: {trigger}
+**Do**: {action}
+```
+Add gotchas:
+```markdown
+| {Situation} | {Watch out} | {Solution} |
+```
+
+#### 5d. Append to progress.txt
+```markdown
+---
+## {YYYY-MM-DD} - {story-id}: {title}
+### Completed
+- {What was implemented}
+### Files Created/Changed
+- `{path}`: {description}
+### Patterns Used
+- {Pattern}: {why}
+### Gotchas Found
+- {Issue}: {solution}
+### Learnings
+- {Insight for future}
+---
+```
+
+#### 5e. Update USAGE.md (if user-facing feature)
+```markdown
+## {Feature}
+**Usage**: `{example}`
+```
 
 ### Phase 6: COMMIT & PR
 

@@ -52,10 +52,15 @@ For each iteration:
 5. **Test** - Run tests: `npm test`
 6. **Verify** - Run full verification: lint, typecheck, build
 7. **Fix issues** - If tests fail, debug and fix
-8. **Update state** - Mark task complete if all tests pass
-9. **Commit & PR** - If task complete, commit and create PR
-10. **Merge** - Merge PR and return to main
-11. **Repeat** - Continue to next task
+8. **Update docs** - AUTO-UPDATE documentation:
+   - INDEX.md: Add new files to registry
+   - AGENTS.md: Add patterns/gotchas discovered
+   - progress.txt: Append learnings for this task
+   - USAGE.md: Add user-facing features
+9. **Update state** - Mark task complete if all tests pass
+10. **Commit & PR** - Commit with docs, create PR
+11. **Merge** - Merge PR and return to main
+12. **Repeat** - Continue to next task
 
 ### Step 4: Completion Check
 

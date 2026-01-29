@@ -1,14 +1,18 @@
 # Complete Task Workflow
 
-Full task completion workflow: verify, test, **update docs**, commit, PR, and prepare for next task.
+Full task completion workflow: verify, test, **auto-update docs**, commit, PR.
+
+Documentation updates are AUTOMATIC - included in this workflow.
 
 ## Pre-computed Context
 
 ```bash
 git status
 git diff --stat
+git diff --name-only
 cat package.json 2>/dev/null | grep -A 20 '"scripts"' || echo "No package.json"
-cat docs/INDEX.md 2>/dev/null | head -20 || echo "No docs"
+cat docs/INDEX.md 2>/dev/null | head -30 || echo "No docs - will create"
+cat docs/AGENTS.md 2>/dev/null | head -20 || echo "No AGENTS.md"
 ```
 
 ## Instructions
@@ -43,35 +47,58 @@ Check if this project has testing requirements enabled. If so:
 - Run lint, typecheck, all test suites
 - Fix any failures before proceeding
 
-### 4. Update Documentation
+### 4. Auto-Update Documentation (AUTOMATIC)
 
-Keep docs as source of truth (reduces tokens for future work):
+Documentation updates happen automatically. Perform ALL:
 
-**INDEX.md** (Required) - Add new files:
-```markdown
-| `{file}` | {purpose} | `{exports}` |
+#### 4a. Create docs if missing
+If no `docs/` directory, create structure:
+```bash
+mkdir -p docs
 ```
+Create INDEX.md, AGENTS.md, ARCHITECTURE.md, USAGE.md, progress.txt.
 
-**AGENTS.md** (If patterns/gotchas found):
+#### 4b. Update INDEX.md (ALWAYS)
+For EVERY new/changed file, add to registry:
+```markdown
+| `{path/file.ts}` | {purpose} | `{exports}` |
+```
+Update dependency graph if structure changed.
+
+#### 4c. Update AGENTS.md (if patterns/gotchas)
 ```markdown
 ### Pattern: {Name}
 **When**: {trigger}
 **Do**: {action}
+**Example**: `{reference}`
+```
+Add gotchas:
+```markdown
+| {Situation} | {Watch out} | {Solution} |
 ```
 
-**progress.txt** (Required) - Append:
+#### 4d. Append to progress.txt (ALWAYS)
 ```markdown
 ---
-## {Date} - {Task}
-- Completed: {what}
-- Learnings: {insights}
+## {YYYY-MM-DD} - {Task Name}
+### Completed
+- {What was built}
+### Files Changed
+- `{path}`: {change}
+### Learnings
+- {Insight}
 ---
 ```
 
-**USAGE.md** (If user-facing):
+#### 4e. Update USAGE.md (if user-facing)
 ```markdown
 ## {Feature}
-**Usage**: `{example}`
+**Usage**: `{example code}`
+```
+
+#### 4f. Stage docs
+```bash
+git add docs/
 ```
 
 ### 5. Commit and Push
