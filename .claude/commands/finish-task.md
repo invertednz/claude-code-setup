@@ -1,6 +1,6 @@
 # Finish Task
 
-Complete the current task: verify, commit, create PR, and merge.
+Complete the current task: verify, test, **update docs**, commit, create PR, and merge.
 
 ## Pre-computed Context
 
@@ -9,6 +9,7 @@ git branch --show-current
 git status
 git diff --stat
 git log main..HEAD --oneline
+cat docs/INDEX.md 2>/dev/null | head -20 || echo "No docs - run /init-docs"
 ```
 
 ## Instructions
@@ -47,7 +48,42 @@ If ANY verification fails:
 3. Fix if requested, then re-verify
 4. Do NOT proceed until all pass
 
-### Step 3: Stage and Commit
+### Step 3: Update Documentation
+
+Update docs to reflect changes (source of truth for future context):
+
+1. **INDEX.md** - Add new files to registry:
+   ```markdown
+   | `{new file}` | {purpose} | `{exports}` |
+   ```
+
+2. **AGENTS.md** - Add patterns/gotchas discovered:
+   ```markdown
+   ### Pattern: {Name}
+   **When**: {trigger}
+   **Do**: {action}
+   ```
+
+3. **progress.txt** - Append learnings:
+   ```markdown
+   ---
+   ## {Date} - {Task Name}
+   ### Completed
+   - {What was built}
+   ### Learnings
+   - {Insights gained}
+   ---
+   ```
+
+4. **USAGE.md** - Add user-facing features:
+   ```markdown
+   ## {Feature}
+   **Usage**: `{example}`
+   ```
+
+Stage docs: `git add docs/`
+
+### Step 4: Stage and Commit
 
 1. Review changes:
    ```bash
@@ -56,7 +92,7 @@ If ANY verification fails:
 
 2. Stage specific files (avoid `git add .`):
    ```bash
-   git add {specific files}
+   git add src/{files} tests/{files} docs/
    ```
 
 3. Create commit:
@@ -68,7 +104,7 @@ If ANY verification fails:
    Co-Authored-By: Claude <noreply@anthropic.com>"
    ```
 
-### Step 4: Push and Create PR
+### Step 5: Push and Create PR
 
 ```bash
 git push -u origin HEAD
@@ -107,7 +143,7 @@ EOF
 )"
 ```
 
-### Step 5: Merge PR
+### Step 6: Merge PR
 
 Ask user: "PR created. Should I merge it now?"
 
@@ -118,7 +154,7 @@ git checkout main
 git pull
 ```
 
-### Step 6: Report
+### Step 7: Report
 
 Output:
 - PR URL

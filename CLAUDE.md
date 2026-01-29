@@ -41,6 +41,55 @@ This project uses Claude Code with automated testing and PR workflows. Follow th
 | `/security-check` | OWASP Top 10 security analysis |
 | `/commit-push-pr` | Quick commit and PR creation |
 
+### Documentation Commands
+
+| Command | Description |
+|---------|-------------|
+| `/init-docs` | Create documentation structure (run once per project) |
+| `/update-docs` | Update docs after completing a task |
+| `/load-context` | Load minimal context from docs (~50% token savings) |
+
+---
+
+## Context Management
+
+### Token Reduction Strategy
+
+Instead of loading all source files, use documentation as context:
+
+| Approach | Tokens | When to Use |
+|----------|--------|-------------|
+| Load all source | ~10-50k | Never (wasteful) |
+| Load INDEX.md + AGENTS.md | ~1-3k | Starting work |
+| Load specific files | +500 each | When needed |
+
+### Before Starting Work
+
+1. Run `/load-context` or read:
+   - `docs/INDEX.md` - Codebase map (ALWAYS read first)
+   - `docs/AGENTS.md` - Patterns, gotchas, conventions
+
+2. Load specific files only when needed
+
+### Documentation Files
+
+| File | Purpose | Load When |
+|------|---------|-----------|
+| `docs/INDEX.md` | File registry, structure | Always (first) |
+| `docs/AGENTS.md` | Patterns, gotchas | Starting task |
+| `docs/ARCHITECTURE.md` | Technical deep-dive | Complex work |
+| `docs/USAGE.md` | User guide | Documenting features |
+| `docs/progress.txt` | Learnings log | Recording discoveries |
+
+### After Completing Work
+
+Run `/update-docs` or manually update:
+- INDEX.md with new files
+- AGENTS.md with patterns/gotchas
+- progress.txt with learnings
+
+**Documentation is the source of truth** - it enables efficient future work.
+
 ---
 
 ## Workflow

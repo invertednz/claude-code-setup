@@ -113,6 +113,14 @@ You should see the custom commands: `/commit-push-pr`, `/complete-task`, etc.
 | `/security-check` | Analyzes code for OWASP Top 10 vulnerabilities |
 | `/commit-push-pr` | Quick commit and PR creation |
 
+**Documentation (Context Optimization):**
+
+| Command | What It Does |
+|---------|--------------|
+| `/init-docs` | Create documentation structure (INDEX.md, AGENTS.md, etc.) |
+| `/update-docs` | Update docs after completing a task |
+| `/load-context` | Load minimal context from docs (~50% token savings) |
+
 ### Automatic Formatting
 
 A hook automatically formats code with Prettier after every edit.
@@ -459,6 +467,80 @@ Edit `.claude/settings.json`:
   }
 }
 ```
+
+---
+
+## Documentation System (Context Optimization)
+
+The documentation system reduces token usage by ~50% while maintaining full codebase understanding.
+
+### Setup
+
+```bash
+# Run once per project
+/init-docs
+```
+
+This creates:
+```
+docs/
+├── INDEX.md        # Codebase map (READ FIRST)
+├── AGENTS.md       # Patterns, gotchas, conventions
+├── ARCHITECTURE.md # Technical deep-dive
+├── USAGE.md        # User guide
+└── progress.txt    # Learnings log (append-only)
+```
+
+### How It Works
+
+Instead of loading all source files (~10-50k tokens), Claude reads:
+- `INDEX.md` - File registry, structure, dependencies (~500 tokens)
+- `AGENTS.md` - Patterns, gotchas, conventions (~500 tokens)
+
+**Result**: ~50% token reduction while maintaining full context.
+
+### Workflow Integration
+
+Documentation updates are **automatic** with task completion:
+
+```bash
+/finish-task    # Includes doc updates
+/complete-task  # Includes doc updates
+/update-docs    # Manual update
+```
+
+### Documentation Contents
+
+**INDEX.md** - Codebase map:
+```markdown
+| File | Purpose | Exports |
+|------|---------|---------|
+| `src/auth.ts` | Authentication | `login()`, `logout()` |
+```
+
+**AGENTS.md** - Patterns and gotchas:
+```markdown
+### Pattern: Repository
+**When**: Data access
+**Do**: Use repository pattern
+**Example**: `src/repos/userRepo.ts`
+```
+
+**progress.txt** - Append-only learnings:
+```markdown
+## 2025-01-29 - Auth Feature
+- Completed: JWT authentication
+- Gotcha: Token refresh needs retry logic
+```
+
+### Best Practices
+
+Based on [54% context reduction research](https://gist.github.com/johnlindquist/849b813e76039a908d962b2f0923dc9a):
+
+1. **Keep CLAUDE.md under 500 lines** - Link to docs instead
+2. **Use trigger tables** - "When X, load Y" format
+3. **On-demand loading** - Load detailed docs only when needed
+4. **Layered memory** - Different files for different purposes
 
 ---
 
