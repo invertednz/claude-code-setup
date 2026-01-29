@@ -144,91 +144,51 @@ Dangerous commands are blocked:
 
 ## Daily Usage Guide
 
-### Starting a Task (Branch-Based)
-
-Each task runs on its own feature branch, then merges to main.
-
-1. **Start Claude Code** in your project directory
-   ```bash
-   claude
-   ```
-
-2. **Create a feature branch**
-   ```
-   /start-task
-   ```
-   This creates `feature/{task-name}` branch from latest main.
-
-3. **Enter Plan Mode** (press `Shift+Tab` twice)
-
-   > "I use Plan mode, and go back and forth with Claude until I like its plan. From there, I switch into auto-accept edits mode and Claude can usually 1-shot it." - Boris
-
-4. **Implement** on your feature branch
-
-5. **Complete and merge**
-   ```
-   /finish-task
-   ```
-   This verifies, commits, creates PR, and merges to main.
-
-### TDD Flow (Recommended)
-
-For new features, follow Test-Driven Development:
+### Recommended: Spec-Driven (2 Commands)
 
 ```bash
-# 1. Create specification
+# Step 1: Create spec (Claude asks questions until satisfied)
 /create-spec
 
-# 2. Refine until Claude has no more questions
-/refine-spec
-
-# 3. Generate failing tests (Vitest + Playwright)
-/create-spec-tests
-
-# 4. Implement until all tests pass
+# Step 2: Run TDD loop (does EVERYTHING automatically)
 /tdd-loop
 ```
 
-The TDD loop automatically:
-- Creates a branch for each user story
-- Implements code to pass tests
-- Runs verification
-- Creates PR and merges
-- Moves to next story
+**That's it.** The TDD loop handles:
+- ✅ Branch creation per story
+- ✅ Test creation (unit, integration, Playwright e2e)
+- ✅ Implementation
+- ✅ Verification (lint, typecheck, tests, build)
+- ✅ Security scanning
+- ✅ Documentation updates
+- ✅ Commit & PR
+- ✅ Merge to main
+- ✅ Loop to next story
 
-### Autonomous Mode (Ralph Loop)
-
-For well-defined tasks, let Claude work autonomously:
+### Alternative: Single Task
 
 ```bash
-/ralph-loop "Build a REST API with CRUD, validation, and tests" --max-iterations 50
+/start-task
 ```
 
-Claude will:
-1. Break down the task into stories
-2. Create branch for each story
-3. Implement and test each story
-4. Create PRs and merge
-5. Continue until all complete or max iterations
+Full automated workflow for one task - same automation as above.
 
-To stop: `/cancel-ralph`
+### Alternative: Fully Autonomous
 
-### Quick Workflows
-
-**Complete current task (all-in-one):**
-```
-/complete-task
+```bash
+/create-spec
+/ralph-loop --max-iterations 50
 ```
 
-**Just commit and PR:**
-```
-/commit-push-pr
-```
+Runs completely unattended until all stories are done.
 
-**Run verification only:**
-```
-/test-and-verify
-```
+### Manual Commands (Rarely Needed)
+
+| Command | When to Use |
+|---------|-------------|
+| `/cancel-ralph` | Stop autonomous loop |
+| `/test-and-verify` | Run checks manually |
+| `/commit-push-pr` | Quick commit without full workflow |
 
 ### Creating Tests Only
 

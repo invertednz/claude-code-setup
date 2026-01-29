@@ -6,48 +6,61 @@ This project uses Claude Code with automated testing and PR workflows. Follow th
 
 ---
 
-## Commands Available
+## Simplified Workflow
 
-### Spec & Planning Commands
+You only need to run **2 commands** for most work:
 
-| Command | Description |
-|---------|-------------|
-| `/create-spec` | Create a specification document with user stories |
-| `/refine-spec` | Iterate on spec asking questions until complete |
-| `/create-spec-tests` | Generate TDD tests from spec (Vitest + Playwright) |
+### Option A: Spec-Driven (Recommended)
 
-### Development Commands
+```bash
+/create-spec          # Define requirements, creates prd.json
+/tdd-loop             # Automatically completes ALL stories
+```
 
-| Command | Description |
-|---------|-------------|
-| `/start-task` | Create new branch and set up for a task |
-| `/finish-task` | Verify, commit, PR, and merge current task |
-| `/tdd-loop` | Full TDD cycle: Red → Green → Refactor → PR |
-| `/complete-task` | All-in-one: verify, test, commit, PR |
+### Option B: Ad-hoc Task
 
-### Autonomous Commands
+```bash
+/start-task           # Full workflow for a single task
+```
 
-| Command | Description |
-|---------|-------------|
-| `/ralph-loop` | Start autonomous dev loop until all tasks complete |
-| `/cancel-ralph` | Stop active Ralph loop |
+### Option C: Autonomous
 
-### Quality Commands
+```bash
+/create-spec          # Define requirements
+/ralph-loop           # Autonomous until all done
+```
 
-| Command | Description |
-|---------|-------------|
-| `/test-and-verify` | Run lint, typecheck, tests, build |
-| `/create-tests` | Generate tests for recent changes |
-| `/security-check` | OWASP Top 10 security analysis |
-| `/commit-push-pr` | Quick commit and PR creation |
+**Everything else is automatic**: tests, security, docs, PR, merge.
 
-### Documentation Commands
+---
+
+## Commands Reference
+
+### Primary Commands (Use These)
 
 | Command | Description |
 |---------|-------------|
-| `/init-docs` | Create documentation structure (run once per project) |
-| `/update-docs` | Update docs after completing a task |
-| `/load-context` | Load minimal context from docs (~50% token savings) |
+| `/create-spec` | Create spec with user stories (prd.json) |
+| `/start-task` | Full workflow: implement → test → security → docs → PR → merge |
+| `/tdd-loop` | TDD for all stories in spec: Red → Green → PR → merge (loop) |
+| `/ralph-loop` | Autonomous loop until all stories complete |
+
+### Support Commands (Automatic - rarely need manually)
+
+| Command | Description |
+|---------|-------------|
+| `/cancel-ralph` | Stop autonomous loop |
+| `/refine-spec` | Ask more questions about spec |
+| `/init-docs` | Create docs structure (auto-created if missing) |
+| `/load-context` | Load docs for context (~50% token savings) |
+
+### Manual Commands (If needed)
+
+| Command | Description |
+|---------|-------------|
+| `/test-and-verify` | Run all checks manually |
+| `/security-check` | Run security scan manually |
+| `/commit-push-pr` | Quick commit without full workflow |
 
 ---
 
@@ -94,33 +107,43 @@ Run `/update-docs` or manually update:
 
 ## Workflow
 
-### Standard Task Flow
-
-1. **Plan First** - Start in Plan mode (Shift+Tab twice), iterate until solid
-2. **Start Branch** - Run `/start-task` to create feature branch
-3. **Implement** - Switch to auto-accept mode
-4. **Test** - Create tests per Testing Requirements section
-5. **Verify** - Run `/test-and-verify`
-6. **Complete** - Run `/finish-task` to PR and merge
-7. **Next Task** - Return to main, start next task
-
-### TDD Flow (Recommended)
-
-1. `/create-spec` - Define requirements and user stories
-2. `/refine-spec` - Iterate until spec is complete
-3. `/create-spec-tests` - Generate failing tests (Red phase)
-4. `/tdd-loop` - Implement until tests pass (Green phase)
-5. Automatic PR and merge for each story
-
-### Autonomous Flow (Ralph Loop)
-
-For well-defined tasks with clear completion criteria:
+### Recommended: Spec-Driven Development
 
 ```bash
-/ralph-loop "Build a todo API with CRUD, validation, and tests" --max-iterations 50
+# Step 1: Create spec (Claude asks questions until satisfied)
+/create-spec
+
+# Step 2: Run TDD loop (handles EVERYTHING automatically)
+/tdd-loop
 ```
 
-Claude will work autonomously until complete or max iterations reached.
+That's it. The TDD loop automatically:
+- Creates branch per story
+- Writes tests (unit, integration, Playwright e2e)
+- Implements code
+- Runs verification
+- Runs security scan
+- Updates documentation
+- Creates PR
+- Merges to main
+- Moves to next story
+
+### Alternative: Single Task
+
+```bash
+/start-task
+```
+
+Full workflow for one task - branch, implement, test, security, docs, PR, merge.
+
+### Alternative: Autonomous
+
+```bash
+/create-spec
+/ralph-loop --max-iterations 50
+```
+
+Runs completely autonomously until all stories are done.
 
 ---
 

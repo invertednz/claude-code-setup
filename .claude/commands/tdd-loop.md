@@ -1,196 +1,214 @@
-# TDD Loop - Full Development Cycle
+# TDD Loop - Full Automated Workflow
 
-Execute the complete TDD development cycle: Red → Green → Refactor → Verify → PR.
+**Runs from spec**: Reads `docs/specs/prd.json` and completes ALL stories automatically.
 
-Each task runs on a new branch and merges to main when complete.
+Complete TDD cycle for all stories: Red → Green → Refactor → Security → Docs → PR → Merge.
+
+## Prerequisite
+
+Run `/create-spec` first to create the specification with user stories.
 
 ## Pre-computed Context
 
 ```bash
 git branch --show-current
 git status --short
-cat docs/specs/prd.json 2>/dev/null | head -50 || echo "No prd.json"
+cat docs/specs/prd.json 2>/dev/null || echo "ERROR: No prd.json - run /create-spec first"
+cat docs/INDEX.md 2>/dev/null | head -30 || echo "No docs - will create"
+cat package.json 2>/dev/null | grep -A 15 '"scripts"' || echo "No package.json"
 ```
+
+## Spec Requirement
+
+This command requires `docs/specs/prd.json` with stories:
+```json
+{
+  "name": "Feature Name",
+  "stories": [
+    {
+      "id": "US-1",
+      "title": "Story title",
+      "description": "...",
+      "acceptance_criteria": ["..."],
+      "priority": 1,
+      "passes": false
+    }
+  ]
+}
+```
+
+If no prd.json exists, prompt user to run `/create-spec` first.
 
 ## Instructions
 
-Follow this complete TDD workflow for each user story:
+For EACH story in prd.json, execute the complete workflow automatically:
 
-### Phase 0: Setup Branch
+---
 
-Before starting any work:
+## Per-Story Workflow
 
-1. Ensure working directory is clean
-2. Checkout main and pull latest: `git checkout main && git pull`
-3. Create feature branch: `git checkout -b feature/{story-id}-{short-description}`
+### Phase 0: SETUP BRANCH
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b feature/{story-id}-{short-description}
+```
+
+Initialize docs if missing.
 
 ### Phase 1: RED - Failing Tests
 
-1. **Read the spec** from `docs/specs/prd.json`
-2. **Select highest priority story** where `passes: false`
-3. **Verify tests exist** (from `/create-spec-tests`)
-4. **Run tests** to confirm they fail:
+1. Read story from `docs/specs/prd.json`
+2. Select highest priority story where `passes: false`
+3. Verify/create tests:
+   - Unit tests: `tests/unit/{feature}/{story-id}.test.ts`
+   - Integration: `tests/integration/{feature}/{story-id}.test.ts`
+   - E2E (Playwright): `tests/e2e/{feature}/{story-id}.spec.ts`
+4. Run tests - confirm they FAIL:
    ```bash
    npm test -- --testPathPattern="{story-id}"
    ```
-5. If tests pass unexpectedly, investigate - something is wrong
 
 ### Phase 2: GREEN - Make Tests Pass
 
-1. **Implement the minimum code** to pass each test
-2. **Run tests after each change**:
+1. Implement minimum code to pass tests
+2. Run tests after each change:
    ```bash
    npm test -- --testPathPattern="{story-id}"
    ```
-3. **Iterate until all tests pass**
-4. Do NOT add extra features - only what's needed to pass tests
+3. Iterate until ALL tests pass
+4. Only implement what's needed - no extras
 
-### Phase 3: REFACTOR - Clean Up
+### Phase 3: REFACTOR
 
-1. **Review the implementation** for:
-   - Code duplication
-   - Unclear naming
-   - Complex logic that could be simplified
-2. **Refactor while keeping tests green**
-3. **Run tests after each refactor**:
+1. Review implementation:
+   - Remove duplication
+   - Improve naming
+   - Simplify complex logic
+2. Keep tests green:
    ```bash
    npm test
    ```
 
-### Phase 4: VERIFY - Full Validation
+### Phase 4: VERIFY (Automatic)
 
-Run complete verification:
+Run full verification:
 
 ```bash
 # Lint
 npm run lint
 
 # Type check
-npm run typecheck 2>/dev/null || npx tsc --noEmit
+npm run typecheck || npx tsc --noEmit
 
 # All tests
 npm test
+
+# E2E tests
+npm run test:e2e || npx playwright test
 
 # Build
 npm run build
 ```
 
-If ANY step fails:
-1. Fix the issue
-2. Re-run verification
-3. Do NOT proceed until all pass
+Fix any failures, repeat until all pass.
 
-### Phase 5: AUTO-UPDATE DOCUMENTATION
+### Phase 5: SECURITY CHECK (Automatic)
 
-Documentation is updated automatically after each story:
+Scan for:
+- Hardcoded secrets/credentials
+- Injection vulnerabilities (SQL, XSS, command)
+- Insecure patterns
+- `npm audit`
 
-#### 5a. Update prd.json
+Fix issues before proceeding.
+
+### Phase 6: UPDATE DOCS (Automatic)
+
+#### 6a. Update prd.json
 ```json
-{
-  "id": "{story-id}",
-  "passes": true
-}
+{ "id": "{story-id}", "passes": true }
 ```
 
-#### 5b. Update INDEX.md
-Add all new files to the registry:
+#### 6b. Update INDEX.md
+Add all new files:
 ```markdown
 | `{path/file.ts}` | {purpose} | `{exports}` |
 ```
-Update dependency graph if needed.
 
-#### 5c. Update AGENTS.md
-Add patterns discovered:
-```markdown
-### Pattern: {Name}
-**When**: {trigger}
-**Do**: {action}
-```
-Add gotchas:
-```markdown
-| {Situation} | {Watch out} | {Solution} |
-```
+#### 6c. Update AGENTS.md
+Add patterns/gotchas discovered.
 
-#### 5d. Append to progress.txt
+#### 6d. Append to progress.txt
 ```markdown
 ---
 ## {YYYY-MM-DD} - {story-id}: {title}
 ### Completed
 - {What was implemented}
-### Files Created/Changed
+### Files
 - `{path}`: {description}
-### Patterns Used
-- {Pattern}: {why}
-### Gotchas Found
-- {Issue}: {solution}
+### Tests
+- `{test file}`: {what it tests}
 ### Learnings
-- {Insight for future}
+- {Insights}
 ---
 ```
 
-#### 5e. Update USAGE.md (if user-facing feature)
-```markdown
-## {Feature}
-**Usage**: `{example}`
+#### 6e. Update USAGE.md (if user-facing)
+
+### Phase 7: COMMIT & PR (Automatic)
+
+```bash
+git add src/ tests/ docs/
+
+git commit -m "feat({story-id}): {title}
+
+- Implements: {description}
+- Tests: unit, integration, e2e
+- Docs: Updated
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+git push -u origin HEAD
+
+gh pr create --title "feat({story-id}): {title}" --body "## Summary
+Implements {story-id}: {title}
+
+## Changes
+- {Changes}
+
+## Testing
+- [x] Unit tests
+- [x] Integration tests
+- [x] E2E tests (Playwright)
+- [x] All passing
+
+## Security
+- [x] Scan passed
+
+## Documentation
+- [x] INDEX.md updated
+- [x] progress.txt updated"
 ```
 
-### Phase 6: COMMIT & PR
+### Phase 8: MERGE (Automatic)
 
-1. **Stage changes** (specific files, not `git add .`):
-   ```bash
-   git add src/{files} tests/{files} docs/specs/prd.json
-   ```
+```bash
+gh pr merge --squash --delete-branch
+git checkout main
+git pull
+```
 
-2. **Commit with descriptive message**:
-   ```bash
-   git commit -m "feat({story-id}): {description}
+---
 
-   - Implements {story title}
-   - Adds tests for {acceptance criteria}
+## Loop Control
 
-   Co-Authored-By: Claude <noreply@anthropic.com>"
-   ```
+After completing each story:
 
-3. **Push and create PR**:
-   ```bash
-   git push -u origin HEAD
-   gh pr create --title "feat({story-id}): {description}" --body "## Summary
-   Implements {story-id}: {title}
-
-   ## Changes
-   - {change 1}
-   - {change 2}
-
-   ## Test Plan
-   - [x] Unit tests pass
-   - [x] Integration tests pass
-   - [x] All acceptance criteria verified
-
-   ## Checklist
-   - [x] Tests added
-   - [x] Lint passes
-   - [x] Type check passes
-   - [x] Build succeeds"
-   ```
-
-### Phase 7: MERGE & NEXT
-
-1. **Wait for PR checks** (if CI configured)
-2. **Merge the PR**:
-   ```bash
-   gh pr merge --squash --delete-branch
-   ```
-3. **Return to main**:
-   ```bash
-   git checkout main && git pull
-   ```
-4. **Check for next story** in prd.json where `passes: false`
-5. If more stories exist, repeat from Phase 0
-6. If all stories pass, output completion message
-
-### Completion Signal
-
-When all stories in prd.json have `passes: true`:
+1. Check `prd.json` for next story where `passes: false`
+2. If more stories exist → Repeat from Phase 0
+3. If all stories `passes: true` → Output completion:
 
 ```
 <promise>TASK_COMPLETE</promise>
@@ -198,12 +216,28 @@ When all stories in prd.json have `passes: true`:
 
 Report:
 - All completed stories
-- Total PRs created
-- Any notes or recommendations
+- PRs created
+- Documentation updated
+- Total files changed
 
-### Error Handling
+### Error Recovery
 
-If stuck on a story for more than 3 attempts:
-1. Document the blocker in `progress.txt`
-2. Skip to next story if possible
-3. Report blocked stories at the end
+If stuck on a story (3+ attempts):
+1. Document blocker in progress.txt
+2. Skip to next story
+3. Report blocked stories at end
+
+---
+
+## What This Handles Automatically
+
+For EACH story:
+- ✅ Branch creation
+- ✅ TDD cycle (Red → Green → Refactor)
+- ✅ Testing (unit, integration, Playwright e2e)
+- ✅ Security scanning
+- ✅ Documentation updates
+- ✅ Commit & PR
+- ✅ Merge to main
+
+No need to run any other commands - this handles everything.

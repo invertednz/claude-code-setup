@@ -1,144 +1,268 @@
-# Ralph Loop - Autonomous Development
+# Ralph Loop - Full Autonomous Workflow
 
-Start an autonomous development loop that iterates until all tasks are complete.
+**Runs from spec**: Reads `docs/specs/prd.json` and completes ALL stories autonomously.
 
-Based on Ralph Wiggum methodology: persistent iteration until success.
+Autonomous development loop: implement → test → security → docs → PR → merge for each task.
+
+## Prerequisite
+
+Run `/create-spec` first to create the specification with user stories.
 
 ## Arguments
 
-- `prompt` (required): The task description
 - `--max-iterations N`: Safety limit (default: 30)
-- `--completion-promise TEXT`: Signal for completion (default: "TASK_COMPLETE")
+- `--completion-promise TEXT`: Completion signal (default: "TASK_COMPLETE")
 
 ## Pre-computed Context
 
 ```bash
 git branch --show-current
-cat docs/specs/prd.json 2>/dev/null | head -30 || echo "No prd.json"
+cat docs/specs/prd.json 2>/dev/null || echo "No prd.json - run /create-spec first"
+cat docs/INDEX.md 2>/dev/null | head -30 || echo "No docs - will create"
 cat .claude/ralph-state.json 2>/dev/null || echo "No active loop"
+cat package.json 2>/dev/null | grep -A 15 '"scripts"' || echo "No package.json"
 ```
 
-## Instructions
+## Spec Requirement
 
-### Step 1: Initialize Loop State
-
-Create `.claude/ralph-state.json` to track the loop:
-
+This command reads from `docs/specs/prd.json`:
 ```json
 {
-  "active": true,
-  "prompt": "{the task prompt}",
-  "maxIterations": 30,
-  "currentIteration": 1,
-  "completionPromise": "TASK_COMPLETE",
-  "startedAt": "{ISO timestamp}",
-  "history": []
-}
-```
-
-### Step 2: Parse the Task
-
-If a prd.json exists, work through stories in priority order.
-Otherwise, break down the prompt into subtasks.
-
-### Step 3: Main Loop Behavior
-
-For each iteration:
-
-1. **Check state** - Read `.claude/ralph-state.json`
-2. **Find next task** - Select highest priority incomplete item
-3. **Create branch** - `git checkout -b feature/{task-id}` if not on feature branch
-4. **Implement** - Write code to complete the task
-5. **Test** - Run tests: `npm test`
-6. **Verify** - Run full verification: lint, typecheck, build
-7. **Fix issues** - If tests fail, debug and fix
-8. **Update docs** - AUTO-UPDATE documentation:
-   - INDEX.md: Add new files to registry
-   - AGENTS.md: Add patterns/gotchas discovered
-   - progress.txt: Append learnings for this task
-   - USAGE.md: Add user-facing features
-9. **Update state** - Mark task complete if all tests pass
-10. **Commit & PR** - Commit with docs, create PR
-11. **Merge** - Merge PR and return to main
-12. **Repeat** - Continue to next task
-
-### Step 4: Completion Check
-
-After each iteration, check:
-
-- Are all stories in prd.json `passes: true`?
-- Has max iterations been reached?
-- Is there a blocker that can't be resolved?
-
-If complete, output:
-
-```
-<promise>TASK_COMPLETE</promise>
-```
-
-And clean up:
-- Delete `.claude/ralph-state.json`
-- Report summary of completed work
-
-### Step 5: Iteration Tracking
-
-Update `.claude/ralph-state.json` after each iteration:
-
-```json
-{
-  "currentIteration": 2,
-  "history": [
+  "name": "Feature Name",
+  "stories": [
     {
-      "iteration": 1,
-      "task": "US-1",
-      "status": "completed",
-      "duration": "5m",
-      "pr": "https://github.com/..."
+      "id": "US-1",
+      "title": "Story title",
+      "acceptance_criteria": ["..."],
+      "priority": 1,
+      "passes": false
     }
   ]
 }
 ```
 
-### Step 6: Error Recovery
+If no prd.json exists, prompt user to run `/create-spec` first.
 
-If stuck on a task:
+## Instructions
 
-1. Log the issue to `progress.txt`
-2. Increment retry counter
-3. After 3 retries on same task:
-   - Mark as blocked
-   - Move to next task
-   - Report blocked task at end
+### Initialization
 
-### Example Usage
-
-```bash
-# Basic usage
-/ralph-loop "Build a todo API with CRUD operations"
-
-# With options
-/ralph-loop "Implement user authentication" --max-iterations 50 --completion-promise "AUTH_COMPLETE"
-
-# With existing spec
-/ralph-loop "Complete all stories in prd.json" --max-iterations 100
+Create `.claude/ralph-state.json`:
+```json
+{
+  "active": true,
+  "prompt": "{task}",
+  "maxIterations": 30,
+  "currentIteration": 1,
+  "completionPromise": "TASK_COMPLETE",
+  "startedAt": "{timestamp}",
+  "completedTasks": [],
+  "history": []
+}
 ```
 
-### TDD Integration
+Initialize docs if `docs/INDEX.md` doesn't exist.
 
-The loop follows TDD principles:
+---
 
-1. **Spec First** - Read requirements from prd.json
-2. **Tests First** - Ensure tests exist (run `/create-spec-tests` if not)
-3. **Red** - Verify tests fail
-4. **Green** - Implement until tests pass
-5. **Refactor** - Clean up code
-6. **PR** - Commit and create PR
-7. **Next** - Move to next story
+## Main Loop (Per Task)
 
-### Important Notes
+For each task/story, execute the COMPLETE workflow:
 
-- Each task runs on its own feature branch
-- PRs are created and merged for each completed task
-- State persists in `.claude/ralph-state.json`
-- Use `/cancel-ralph` to stop the loop
-- Progress is logged to `progress.txt`
+### Phase 1: SETUP
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b feature/{task-id}
+```
+
+### Phase 2: IMPLEMENT
+
+1. Read task from prd.json or parse prompt
+2. Implement the feature/fix
+3. Create tests:
+   - Unit tests (`*.test.ts`)
+   - Integration tests (`tests/integration/`)
+   - E2E tests with Playwright (`tests/e2e/`)
+
+### Phase 3: VERIFY (Automatic)
+
+```bash
+npm run lint
+npm run typecheck || npx tsc --noEmit
+npm test
+npm run test:e2e || npx playwright test
+npm run build
+```
+
+Fix failures, repeat until all pass.
+
+### Phase 4: SECURITY (Automatic)
+
+Scan for:
+- Secrets/credentials
+- Injection vulnerabilities
+- `npm audit`
+
+Fix issues before proceeding.
+
+### Phase 5: DOCUMENTATION (Automatic)
+
+#### Update INDEX.md
+```markdown
+| `{file}` | {purpose} | `{exports}` |
+```
+
+#### Update AGENTS.md
+Add patterns/gotchas discovered.
+
+#### Append to progress.txt
+```markdown
+---
+## {YYYY-MM-DD} - {Task}
+### Completed
+- {What was built}
+### Files
+- `{path}`: {description}
+### Learnings
+- {Insights}
+---
+```
+
+#### Update USAGE.md (if user-facing)
+
+#### Update prd.json (if using stories)
+```json
+{ "id": "{task-id}", "passes": true }
+```
+
+### Phase 6: COMMIT & PR (Automatic)
+
+```bash
+git add src/ tests/ docs/
+
+git commit -m "feat({task}): {description}
+
+- {Changes}
+- Tests: added
+- Docs: updated
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+git push -u origin HEAD
+
+gh pr create --title "feat({task}): {description}" --body "## Summary
+{description}
+
+## Testing
+- [x] Unit tests
+- [x] Integration tests
+- [x] E2E tests
+- [x] All passing
+
+## Security
+- [x] Scan passed
+
+## Documentation
+- [x] Updated"
+```
+
+### Phase 7: MERGE (Automatic)
+
+```bash
+gh pr merge --squash --delete-branch
+git checkout main
+git pull
+```
+
+### Phase 8: UPDATE STATE
+
+```json
+{
+  "currentIteration": N+1,
+  "completedTasks": [..., "{task}"],
+  "history": [..., {"task": "{task}", "pr": "{url}", "timestamp": "..."}]
+}
+```
+
+---
+
+## Loop Control
+
+After each task:
+
+1. **Check completion**:
+   - All stories in prd.json have `passes: true`? → Complete
+   - Max iterations reached? → Stop
+   - More tasks? → Continue to next
+
+2. **If complete**:
+   - Delete `.claude/ralph-state.json`
+   - Output: `<promise>TASK_COMPLETE</promise>`
+   - Report summary
+
+3. **If more tasks**:
+   - Increment iteration
+   - Return to Phase 1
+
+### Error Recovery
+
+If stuck (3+ attempts on same task):
+1. Log to progress.txt
+2. Mark as blocked
+3. Move to next task
+4. Report blocked tasks at end
+
+---
+
+## Completion Report
+
+When all tasks done:
+
+```
+<promise>TASK_COMPLETE</promise>
+
+## Summary
+- Iterations: {N}
+- Tasks completed: {list}
+- PRs merged: {count}
+
+## Documentation Updated
+- INDEX.md: {N} files added
+- AGENTS.md: {N} patterns
+- progress.txt: {N} entries
+- USAGE.md: {N} features
+
+## Blocked (if any)
+- {task}: {reason}
+```
+
+---
+
+## What This Handles Automatically
+
+For EACH task:
+- ✅ Branch creation
+- ✅ Implementation
+- ✅ Testing (unit, integration, Playwright e2e)
+- ✅ Security scanning
+- ✅ Documentation updates
+- ✅ Commit & PR
+- ✅ Merge to main
+- ✅ Loop to next task
+
+Runs autonomously until complete or max iterations.
+
+## Usage
+
+```bash
+# With prd.json
+/ralph-loop "Complete all stories" --max-iterations 50
+
+# Ad-hoc task
+/ralph-loop "Build todo API with CRUD and tests" --max-iterations 30
+
+# Stop loop
+/cancel-ralph
+```
