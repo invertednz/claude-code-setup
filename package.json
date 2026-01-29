@@ -1,0 +1,26 @@
+{
+  "name": "claude-code-setup",
+  "version": "1.0.0",
+  "description": "Team setup for Claude Code with automatic testing and PR workflows",
+  "main": "scripts/setup.js",
+  "bin": {
+    "claude-code-setup": "scripts/setup.js"
+  },
+  "scripts": {
+    "setup:global": "node scripts/setup.js --global",
+    "setup:project": "node scripts/setup.js --project",
+    "setup:both": "node scripts/setup.js --both"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "development",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
