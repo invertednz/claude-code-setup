@@ -1,251 +1,160 @@
 # TDD Loop - Full Automated Workflow
 
-**Requires task ID**: Specify which story to work on, or "all" to complete all stories.
-
-Complete TDD cycle: Red → Green → Refactor → Security → Docs → PR → Merge.
+Uses the ralph-loop plugin with TDD methodology.
 
 ## Usage
 
 ```
-/tdd-loop US-1           # Complete specific story
-/tdd-loop US-1,US-2,US-3 # Complete multiple stories
-/tdd-loop all            # Complete ALL stories
+/tdd-loop US-1            # Single story
+/tdd-loop US-1,US-2       # Multiple stories
+/tdd-loop all             # All incomplete stories
 ```
 
 ## Prerequisite
 
-Run `/create-spec` first to create the specification with user stories.
+1. Run `/create-spec` first to create prd.json
+2. Ensure ralph-loop plugin is installed: `/plugin install ralph-loop@claude-plugins-official`
 
 ## Pre-computed Context
 
 ```bash
-git branch --show-current
-git status --short
 cat docs/specs/prd.json 2>/dev/null || echo "ERROR: No prd.json - run /create-spec first"
 cat docs/INDEX.md 2>/dev/null | head -30 || echo "No docs - will create"
-cat package.json 2>/dev/null | grep -A 15 '"scripts"' || echo "No package.json"
+git branch --show-current
 ```
 
 ## Arguments
 
 - **task** (required): Story ID(s) or "all"
-  - Single: `US-1`
-  - Multiple: `US-1,US-2,US-3`
-  - All: `all`
-
-## Task Selection
-
-If argument is "all":
-- Process all stories where `passes: false`
-- Work through them in priority order
-
-If argument is story ID(s):
-- Process only the specified stories
-- Validate they exist in prd.json
-
-If NO argument provided:
-- List available stories from prd.json
-- Ask: "Which stories? (e.g., US-1 or US-1,US-2 or all)"
 
 ## Instructions
 
-For EACH story in prd.json, execute the complete workflow automatically:
+### Step 1: Parse Task Argument
 
----
+If no argument provided:
+- List available stories from prd.json
+- Ask: "Which stories? (e.g., US-1 or US-1,US-2 or all)"
 
-## Per-Story Workflow
+### Step 2: Build TDD Prompt
 
-### Phase 0: SETUP BRANCH
+For the selected story/stories, construct a prompt following the ralph-loop TDD template:
 
-```bash
-git checkout main
-git pull origin main
-git checkout -b feature/{story-id}-{short-description}
-```
+```markdown
+Complete the following user story using TDD methodology.
 
-Initialize docs if missing.
+## Story: {story-id} - {title}
 
-### Phase 1: RED - Failing Tests
+{description}
 
-1. Read story from `docs/specs/prd.json`
-2. Select highest priority story where `passes: false`
-3. Verify/create tests:
-   - Unit tests: `tests/unit/{feature}/{story-id}.test.ts`
-   - Integration: `tests/integration/{feature}/{story-id}.test.ts`
-   - E2E (Playwright): `tests/e2e/{feature}/{story-id}.spec.ts`
-4. Run tests - confirm they FAIL:
-   ```bash
-   npm test -- --testPathPattern="{story-id}"
-   ```
+### Acceptance Criteria
+{acceptance_criteria as checklist}
 
-### Phase 2: GREEN - Make Tests Pass
+## TDD Process (Follow Exactly)
 
-1. Implement minimum code to pass tests
-2. Run tests after each change:
-   ```bash
-   npm test -- --testPathPattern="{story-id}"
-   ```
-3. Iterate until ALL tests pass
-4. Only implement what's needed - no extras
+1. **Create feature branch**
+   git checkout main && git pull
+   git checkout -b feature/{story-id}
 
-### Phase 3: REFACTOR
+2. **Write failing tests FIRST**
+   - Unit tests in tests/unit/{feature}/{story-id}.test.ts
+   - Integration tests in tests/integration/{feature}/{story-id}.test.ts
+   - E2E tests (Playwright) in tests/e2e/{feature}/{story-id}.spec.ts
 
-1. Review implementation:
+3. **Run tests - confirm they FAIL**
+   npm test
+
+4. **Implement minimum code to pass tests**
+   - Only implement what's needed
+   - No extra features
+
+5. **Run tests after each change**
+   npm test
+
+6. **If tests fail, debug and fix**
+   - Read error messages
+   - Fix the issue
+   - Run tests again
+
+7. **When tests pass, refactor if needed**
    - Remove duplication
    - Improve naming
-   - Simplify complex logic
-2. Keep tests green:
-   ```bash
+   - Keep tests green
+
+8. **Run full verification**
+   npm run lint
+   npm run typecheck
    npm test
-   ```
+   npm run build
 
-### Phase 4: VERIFY (Automatic)
+9. **Security scan**
+   - Check for hardcoded secrets/credentials
+   - Scan for SQL injection vulnerabilities
+   - Scan for XSS vulnerabilities
+   - Scan for command injection
+   - Run `npm audit` for dependency vulnerabilities
+   - Fix any issues before proceeding
 
-Run full verification:
+11. **Update documentation**
+    - Add new files to docs/INDEX.md
+    - Add patterns/gotchas to docs/AGENTS.md
+    - Append learnings to docs/progress.txt
 
-```bash
-# Lint
-npm run lint
+12. **Commit and create PR**
+    git add src/ tests/ docs/
+    git commit -m "feat({story-id}): {title}"
+    git push -u origin HEAD
+    gh pr create
 
-# Type check
-npm run typecheck || npx tsc --noEmit
+13. **Merge PR**
+    gh pr merge --squash --delete-branch
+    git checkout main && git pull
 
-# All tests
-npm test
+14. **Mark story complete**
+    Update prd.json: { "id": "{story-id}", "passes": true }
 
-# E2E tests
-npm run test:e2e || npx playwright test
+## Completion Criteria
 
-# Build
-npm run build
-```
-
-Fix any failures, repeat until all pass.
-
-### Phase 5: SECURITY CHECK (Automatic)
-
-Scan for:
-- Hardcoded secrets/credentials
-- Injection vulnerabilities (SQL, XSS, command)
-- Insecure patterns
-- `npm audit`
-
-Fix issues before proceeding.
-
-### Phase 6: UPDATE DOCS (Automatic)
-
-#### 6a. Update prd.json
-```json
-{ "id": "{story-id}", "passes": true }
-```
-
-#### 6b. Update INDEX.md
-Add all new files:
-```markdown
-| `{path/file.ts}` | {purpose} | `{exports}` |
-```
-
-#### 6c. Update AGENTS.md
-Add patterns/gotchas discovered.
-
-#### 6d. Append to progress.txt
-```markdown
----
-## {YYYY-MM-DD} - {story-id}: {title}
-### Completed
-- {What was implemented}
-### Files
-- `{path}`: {description}
-### Tests
-- `{test file}`: {what it tests}
-### Learnings
-- {Insights}
----
-```
-
-#### 6e. Update USAGE.md (if user-facing)
-
-### Phase 7: COMMIT & PR (Automatic)
-
-```bash
-git add src/ tests/ docs/
-
-git commit -m "feat({story-id}): {title}
-
-- Implements: {description}
-- Tests: unit, integration, e2e
-- Docs: Updated
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
-
-git push -u origin HEAD
-
-gh pr create --title "feat({story-id}): {title}" --body "## Summary
-Implements {story-id}: {title}
-
-## Changes
-- {Changes}
-
-## Testing
-- [x] Unit tests
-- [x] Integration tests
-- [x] E2E tests (Playwright)
-- [x] All passing
-
-## Security
-- [x] Scan passed
-
-## Documentation
-- [x] INDEX.md updated
-- [x] progress.txt updated"
-```
-
-### Phase 8: MERGE (Automatic)
-
-```bash
-gh pr merge --squash --delete-branch
-git checkout main
-git pull
-```
-
----
-
-## Loop Control
-
-After completing each story:
-
-1. Check `prd.json` for next story where `passes: false`
-2. If more stories exist → Repeat from Phase 0
-3. If all stories `passes: true` → Output completion:
-
-```
-<promise>TASK_COMPLETE</promise>
-```
-
-Report:
-- All completed stories
-- PRs created
+Output <promise>TASK_COMPLETE</promise> ONLY when:
+- All tests pass (unit, integration, e2e)
+- Lint passes
+- TypeScript compiles
+- Build succeeds
+- Security scan passes (no vulnerabilities)
 - Documentation updated
-- Total files changed
+- PR merged to main
+- Story marked as passes: true in prd.json
 
-### Error Recovery
+If multiple stories, repeat for each one.
+```
 
-If stuck on a story (3+ attempts):
-1. Document blocker in progress.txt
-2. Skip to next story
-3. Report blocked stories at end
+### Step 3: Start Ralph Loop
 
----
+Execute the ralph-loop with the TDD prompt:
 
-## What This Handles Automatically
+```bash
+/ralph-loop:ralph-loop "{TDD prompt}" --max-iterations 30 --completion-promise "TASK_COMPLETE"
+```
 
-For EACH story:
-- ✅ Branch creation
-- ✅ TDD cycle (Red → Green → Refactor)
-- ✅ Testing (unit, integration, Playwright e2e)
-- ✅ Security scanning
-- ✅ Documentation updates
-- ✅ Commit & PR
-- ✅ Merge to main
+### Step 4: Loop Behavior
 
-No need to run any other commands - this handles everything.
+The ralph-loop plugin handles:
+- Automatic re-prompting after each iteration
+- Persistence of work in files/git
+- Stopping when completion promise is output
+- Max iterations safety limit
+
+### Completion
+
+When `<promise>TASK_COMPLETE</promise>` is output:
+- All specified stories are done
+- All tests pass (unit, integration, e2e)
+- Security scan passed
+- PRs have been merged
+- Documentation is updated
+
+Report summary:
+- Stories completed
+- Tests created/passed
+- Security issues found/fixed
+- PRs created
+- Files changed
