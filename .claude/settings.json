@@ -24,7 +24,6 @@
       "Bash(gh issue *)",
       "Bash(gh auth status)",
       "Bash(ls *)",
-      "Bash(cat *)",
       "Bash(mkdir *)",
       "Bash(node *)",
       "Bash(tsc *)",
@@ -36,19 +35,13 @@
     "deny": [
       "Bash(rm -rf /)",
       "Bash(git push --force*)",
-      "Bash(git reset --hard*)",
-      "Bash(*--no-verify*)",
-      "Bash(*password*)",
-      "Bash(*secret*)",
-      "Bash(*token*)"
+      "Bash(git reset --hard*)"
     ]
   },
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": {
-          "tool": "Edit"
-        },
+        "matcher": "Edit",
         "hooks": [
           {
             "type": "command",
@@ -57,24 +50,11 @@
         ]
       },
       {
-        "matcher": {
-          "tool": "Write"
-        },
+        "matcher": "Write",
         "hooks": [
           {
             "type": "command",
             "command": "npx prettier --write \"$CLAUDE_FILE_PATH\" 2>/dev/null || true"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": {},
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node .claude/hooks/ralph-stop-hook.js"
           }
         ]
       }
