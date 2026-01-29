@@ -144,27 +144,30 @@ Dangerous commands are blocked:
 
 ## Daily Usage Guide
 
-Always start with `/create-spec`, then choose your execution style:
+Always start with `/create-spec`, then specify which task(s) to work on:
 
-### Option A: TDD Loop (Recommended)
+### Option A: TDD Loop
 
 ```bash
-/create-spec     # Claude asks questions, creates prd.json with stories
-/tdd-loop        # Completes ALL stories automatically
+/create-spec              # Claude asks questions, creates prd.json
+/tdd-loop US-1            # Complete specific story
+/tdd-loop US-1,US-2,US-3  # Complete multiple stories
+/tdd-loop all             # Complete ALL stories
 ```
 
-### Option B: One Story at a Time
+### Option B: Single Task
 
 ```bash
-/create-spec     # Claude asks questions, creates prd.json with stories
-/start-task      # Completes ONE story (run again for next story)
+/create-spec              # Claude asks questions, creates prd.json
+/start-task US-1          # Complete specific story
+/start-task US-2          # Complete next story
 ```
 
 ### Option C: Fully Autonomous
 
 ```bash
-/create-spec     # Claude asks questions, creates prd.json with stories
-/ralph-loop      # Runs unattended until ALL stories done
+/create-spec              # Claude asks questions, creates prd.json
+/ralph-loop               # Runs unattended until ALL stories done
 ```
 
 **All options automatically handle** (per story):

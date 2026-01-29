@@ -10,25 +10,27 @@ This project uses Claude Code with automated testing and PR workflows. Follow th
 
 You only need **2 commands**. Always start with `/create-spec`:
 
-### Option A: TDD Loop (Recommended)
+### Option A: TDD Loop
 
 ```bash
-/create-spec          # Define requirements, creates prd.json
-/tdd-loop             # Automatically completes ALL stories
+/create-spec              # Define requirements, creates prd.json
+/tdd-loop US-1            # Complete specific story
+/tdd-loop US-1,US-2       # Complete multiple stories
+/tdd-loop all             # Complete ALL stories
 ```
 
-### Option B: One Story at a Time
+### Option B: Single Task
 
 ```bash
-/create-spec          # Define requirements, creates prd.json
-/start-task           # Completes ONE story, run again for next
+/create-spec              # Define requirements, creates prd.json
+/start-task US-1          # Complete specific story
 ```
 
 ### Option C: Fully Autonomous
 
 ```bash
-/create-spec          # Define requirements, creates prd.json
-/ralph-loop           # Autonomous until ALL stories done
+/create-spec              # Define requirements, creates prd.json
+/ralph-loop               # Autonomous until ALL stories done
 ```
 
 **Everything else is automatic**: tests, security, docs, PR, merge.

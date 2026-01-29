@@ -1,8 +1,16 @@
 # Start Task - Full Automated Workflow
 
-**Runs from spec**: Reads next story from `docs/specs/prd.json` and completes it automatically.
+**Requires task ID**: Specify which story to work on from `docs/specs/prd.json`.
 
 This is a **complete workflow** - branch, implement, test, security, docs, PR, merge.
+
+## Usage
+
+```
+/start-task US-1
+/start-task US-2
+/start-task "Add user authentication"
+```
 
 ## Prerequisite
 
@@ -13,41 +21,31 @@ Run `/create-spec` first to create the specification with user stories.
 ```bash
 git branch --show-current
 git status --short
-git log --oneline -3
 cat docs/specs/prd.json 2>/dev/null || echo "No prd.json - run /create-spec first"
 cat docs/INDEX.md 2>/dev/null | head -30 || echo "No docs yet"
-cat docs/AGENTS.md 2>/dev/null | head -20 || echo "No AGENTS.md"
 cat package.json 2>/dev/null | grep -A 15 '"scripts"' || echo "No package.json"
 ```
 
-## Spec Requirement
+## Arguments
 
-This command reads from `docs/specs/prd.json`:
-```json
-{
-  "name": "Feature Name",
-  "stories": [
-    {
-      "id": "US-1",
-      "title": "Story title",
-      "acceptance_criteria": ["..."],
-      "priority": 1,
-      "passes": false
-    }
-  ]
-}
-```
-
-If no prd.json exists, prompt user to run `/create-spec` first.
+- **task** (required): Story ID from prd.json (e.g., "US-1") or task description
 
 ## Instructions
 
 ### Phase 1: SETUP
 
-#### 1a. Read Spec
-Load `docs/specs/prd.json` and select the highest priority story where `passes: false`.
+#### 1a. Parse Task Argument
+If argument matches a story ID in prd.json (e.g., "US-1"):
+- Load that specific story
+- Show story details and confirm
 
-If all stories are complete, report "All stories complete!" and exit.
+If argument is a description (not in prd.json):
+- Use it as an ad-hoc task
+- Ask clarifying questions if needed
+
+If NO argument provided:
+- List available stories from prd.json
+- Ask: "Which story would you like to work on?"
 
 #### 1b. Ensure Clean State
 Check for uncommitted changes:
@@ -69,14 +67,14 @@ If `docs/INDEX.md` doesn't exist, create documentation structure.
 
 ### Phase 2: PLAN
 
-#### 2a. Display Story
+#### 2a. Display Task
 Show the user:
-- Story ID and title
+- Story ID and title (if from prd.json)
 - Description
 - Acceptance criteria
 
-#### 2b. Confirm or Clarify
-Ask: "Ready to implement this story? Any questions before I start?"
+#### 2b. Confirm
+Ask: "Ready to implement? Any questions before I start?"
 
 Get user approval before proceeding.
 

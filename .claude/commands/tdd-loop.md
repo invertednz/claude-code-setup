@@ -1,8 +1,16 @@
 # TDD Loop - Full Automated Workflow
 
-**Runs from spec**: Reads `docs/specs/prd.json` and completes ALL stories automatically.
+**Requires task ID**: Specify which story to work on, or "all" to complete all stories.
 
-Complete TDD cycle for all stories: Red → Green → Refactor → Security → Docs → PR → Merge.
+Complete TDD cycle: Red → Green → Refactor → Security → Docs → PR → Merge.
+
+## Usage
+
+```
+/tdd-loop US-1           # Complete specific story
+/tdd-loop US-1,US-2,US-3 # Complete multiple stories
+/tdd-loop all            # Complete ALL stories
+```
 
 ## Prerequisite
 
@@ -18,26 +26,26 @@ cat docs/INDEX.md 2>/dev/null | head -30 || echo "No docs - will create"
 cat package.json 2>/dev/null | grep -A 15 '"scripts"' || echo "No package.json"
 ```
 
-## Spec Requirement
+## Arguments
 
-This command requires `docs/specs/prd.json` with stories:
-```json
-{
-  "name": "Feature Name",
-  "stories": [
-    {
-      "id": "US-1",
-      "title": "Story title",
-      "description": "...",
-      "acceptance_criteria": ["..."],
-      "priority": 1,
-      "passes": false
-    }
-  ]
-}
-```
+- **task** (required): Story ID(s) or "all"
+  - Single: `US-1`
+  - Multiple: `US-1,US-2,US-3`
+  - All: `all`
 
-If no prd.json exists, prompt user to run `/create-spec` first.
+## Task Selection
+
+If argument is "all":
+- Process all stories where `passes: false`
+- Work through them in priority order
+
+If argument is story ID(s):
+- Process only the specified stories
+- Validate they exist in prd.json
+
+If NO argument provided:
+- List available stories from prd.json
+- Ask: "Which stories? (e.g., US-1 or US-1,US-2 or all)"
 
 ## Instructions
 
