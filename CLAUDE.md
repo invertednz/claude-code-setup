@@ -6,16 +6,72 @@ This project uses Claude Code with automated testing and PR workflows. Follow th
 
 ---
 
+## Commands Available
+
+### Spec & Planning Commands
+
+| Command | Description |
+|---------|-------------|
+| `/create-spec` | Create a specification document with user stories |
+| `/refine-spec` | Iterate on spec asking questions until complete |
+| `/create-spec-tests` | Generate TDD tests from spec (Vitest + Playwright) |
+
+### Development Commands
+
+| Command | Description |
+|---------|-------------|
+| `/start-task` | Create new branch and set up for a task |
+| `/finish-task` | Verify, commit, PR, and merge current task |
+| `/tdd-loop` | Full TDD cycle: Red → Green → Refactor → PR |
+| `/complete-task` | All-in-one: verify, test, commit, PR |
+
+### Autonomous Commands
+
+| Command | Description |
+|---------|-------------|
+| `/ralph-loop` | Start autonomous dev loop until all tasks complete |
+| `/cancel-ralph` | Stop active Ralph loop |
+
+### Quality Commands
+
+| Command | Description |
+|---------|-------------|
+| `/test-and-verify` | Run lint, typecheck, tests, build |
+| `/create-tests` | Generate tests for recent changes |
+| `/security-check` | OWASP Top 10 security analysis |
+| `/commit-push-pr` | Quick commit and PR creation |
+
+---
+
 ## Workflow
 
-### Task Completion Checklist
+### Standard Task Flow
 
 1. **Plan First** - Start in Plan mode (Shift+Tab twice), iterate until solid
-2. **Implement** - Switch to auto-accept mode
-3. **Test** - Create tests per Testing Requirements section
-4. **Verify** - Run `/test-and-verify`
-5. **PR** - Run `/commit-push-pr` or `/complete-task`
-6. **Next Task** - Move on only after PR is created
+2. **Start Branch** - Run `/start-task` to create feature branch
+3. **Implement** - Switch to auto-accept mode
+4. **Test** - Create tests per Testing Requirements section
+5. **Verify** - Run `/test-and-verify`
+6. **Complete** - Run `/finish-task` to PR and merge
+7. **Next Task** - Return to main, start next task
+
+### TDD Flow (Recommended)
+
+1. `/create-spec` - Define requirements and user stories
+2. `/refine-spec` - Iterate until spec is complete
+3. `/create-spec-tests` - Generate failing tests (Red phase)
+4. `/tdd-loop` - Implement until tests pass (Green phase)
+5. Automatic PR and merge for each story
+
+### Autonomous Flow (Ralph Loop)
+
+For well-defined tasks with clear completion criteria:
+
+```bash
+/ralph-loop "Build a todo API with CRUD, validation, and tests" --max-iterations 50
+```
+
+Claude will work autonomously until complete or max iterations reached.
 
 ---
 

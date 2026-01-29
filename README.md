@@ -80,13 +80,38 @@ You should see the custom commands: `/commit-push-pr`, `/complete-task`, etc.
 
 ### Slash Commands
 
+**Spec & Planning:**
+
 | Command | What It Does |
 |---------|--------------|
-| `/commit-push-pr` | Commits your changes, pushes to remote, creates a PR |
-| `/complete-task` | Full workflow: verify → test → commit → PR |
+| `/create-spec` | Create specification with user stories and prd.json |
+| `/refine-spec` | Iterate on spec asking questions until complete |
+| `/create-spec-tests` | Generate TDD tests from spec (Vitest + Playwright) |
+
+**Development:**
+
+| Command | What It Does |
+|---------|--------------|
+| `/start-task` | Create new feature branch for a task |
+| `/finish-task` | Verify, commit, PR, and merge current branch |
+| `/tdd-loop` | Full TDD cycle: Red → Green → Refactor → PR |
+| `/complete-task` | All-in-one: verify → test → commit → PR |
+
+**Autonomous (Ralph Loop):**
+
+| Command | What It Does |
+|---------|--------------|
+| `/ralph-loop` | Start autonomous dev loop until all tasks complete |
+| `/cancel-ralph` | Stop the active Ralph loop |
+
+**Quality:**
+
+| Command | What It Does |
+|---------|--------------|
 | `/test-and-verify` | Runs lint, typecheck, tests, and build |
 | `/create-tests` | Generates unit, integration, and UI tests |
 | `/security-check` | Analyzes code for OWASP Top 10 vulnerabilities |
+| `/commit-push-pr` | Quick commit and PR creation |
 
 ### Automatic Formatting
 
@@ -111,52 +136,88 @@ Dangerous commands are blocked:
 
 ## Daily Usage Guide
 
-### Starting a Task
+### Starting a Task (Branch-Based)
 
-1. **Open your terminal** in your project directory
+Each task runs on its own feature branch, then merges to main.
 
-2. **Start Claude Code**
+1. **Start Claude Code** in your project directory
    ```bash
    claude
    ```
 
+2. **Create a feature branch**
+   ```
+   /start-task
+   ```
+   This creates `feature/{task-name}` branch from latest main.
+
 3. **Enter Plan Mode** (press `Shift+Tab` twice)
 
-   This is crucial. As Boris says:
-   > "I use Plan mode, and go back and forth with Claude until I like its plan. From there, I switch into auto-accept edits mode and Claude can usually 1-shot it."
+   > "I use Plan mode, and go back and forth with Claude until I like its plan. From there, I switch into auto-accept edits mode and Claude can usually 1-shot it." - Boris
 
-4. **Describe your task** to Claude and iterate on the plan
+4. **Implement** on your feature branch
 
-5. **When the plan is solid**, switch to auto-accept mode and let Claude implement
+5. **Complete and merge**
+   ```
+   /finish-task
+   ```
+   This verifies, commits, creates PR, and merges to main.
 
-### Completing a Task
+### TDD Flow (Recommended)
 
-When your implementation is done, run:
+For new features, follow Test-Driven Development:
 
+```bash
+# 1. Create specification
+/create-spec
+
+# 2. Refine until Claude has no more questions
+/refine-spec
+
+# 3. Generate failing tests (Vitest + Playwright)
+/create-spec-tests
+
+# 4. Implement until all tests pass
+/tdd-loop
+```
+
+The TDD loop automatically:
+- Creates a branch for each user story
+- Implements code to pass tests
+- Runs verification
+- Creates PR and merges
+- Moves to next story
+
+### Autonomous Mode (Ralph Loop)
+
+For well-defined tasks, let Claude work autonomously:
+
+```bash
+/ralph-loop "Build a REST API with CRUD, validation, and tests" --max-iterations 50
+```
+
+Claude will:
+1. Break down the task into stories
+2. Create branch for each story
+3. Implement and test each story
+4. Create PRs and merge
+5. Continue until all complete or max iterations
+
+To stop: `/cancel-ralph`
+
+### Quick Workflows
+
+**Complete current task (all-in-one):**
 ```
 /complete-task
 ```
 
-This will:
-1. ✅ Verify code compiles/builds
-2. ✅ Create tests (unit, integration, UI as needed)
-3. ✅ Run the full test suite
-4. ✅ Commit with a descriptive message
-5. ✅ Push and create a PR
-6. ✅ Return the PR URL
-
-### Quick Commits (without full workflow)
-
-For smaller changes:
-
+**Just commit and PR:**
 ```
 /commit-push-pr
 ```
 
-### Running Verification Only
-
-To check everything passes without committing:
-
+**Run verification only:**
 ```
 /test-and-verify
 ```
