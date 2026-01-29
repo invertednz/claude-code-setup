@@ -94,22 +94,22 @@ Complete the following user story using TDD methodology.
    - Run `npm audit` for dependency vulnerabilities
    - Fix any issues before proceeding
 
-11. **Update documentation**
+10. **Update documentation**
     - Add new files to docs/INDEX.md
     - Add patterns/gotchas to docs/AGENTS.md
     - Append learnings to docs/progress.txt
 
-12. **Commit and create PR**
+11. **Commit and create PR**
     git add src/ tests/ docs/
     git commit -m "feat({story-id}): {title}"
     git push -u origin HEAD
     gh pr create
 
-13. **Merge PR**
+12. **Merge PR**
     gh pr merge --squash --delete-branch
     git checkout main && git pull
 
-14. **Mark story complete**
+13. **Mark story complete**
     Update prd.json: { "id": "{story-id}", "passes": true }
 
 ## Completion Criteria
